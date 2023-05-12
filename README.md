@@ -41,6 +41,8 @@ python predict.py -i /path/to/files/*.pdb
 
 Merizo can be ran either in standard mode, or an iterative segmentation mode where domains larger than a certain size are continuously passed through the network until convergence (i.e. the assignment no longer changes). This length threshold is set to 200 residues (roughly just smaller than the average domain in CATH) in `predict.py`.
 
+The iterative mode should be used for processing any long models (~ >800 residues), as well as models from the AlphaFold Protein Structure Database.
+
 #### Standard mode
 ```
 python pred.py -d cpu -i examples/2xdqA.pdb
