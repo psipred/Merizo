@@ -200,6 +200,7 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
     """
     
     dom_ids_ = dom_ids
+    ndr_mask = dom_ids == 0
 
     dom_counts = torch.ones_like(dom_ids_)
     for i, d in enumerate(dom_ids_):
@@ -222,6 +223,8 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
         for i, d in enumerate(dom_counts):
             if d.item() <= threshold:
                 dom_ids_[i] = dom_ids_[i - 1]
+                
+    dom_ids_[ndr_mask] = 0
 
     return dom_ids_
 
