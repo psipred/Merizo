@@ -199,8 +199,7 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
         torch.tensor: _description_
     """
     
-    dr_mask = dom_ids != 0
-    dom_ids_ = dom_ids[dr_mask]
+    dom_ids_ = dom_ids
 
     dom_counts = torch.ones_like(dom_ids_)
     for i, d in enumerate(dom_ids_):
@@ -218,15 +217,13 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
 
         if i == len(dom_ids_) - 1:
             dom_counts[_idx : idx + 1] = counter
-
+            
     if len(dom_counts <= threshold) != 0:
         for i, d in enumerate(dom_counts):
             if d.item() <= threshold:
                 dom_ids_[i] = dom_ids_[i - 1]
-                
-    dom_ids[dr_mask] = dom_ids_
 
-    return dom_ids
+    return dom_ids_
 
 
 def separate_components(
