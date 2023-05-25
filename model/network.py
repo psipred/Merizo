@@ -9,6 +9,8 @@ from .decoders.mask_decoder import MaskTransformer
 class Merizo(nn.Module):
     def __init__(self):
         super(Merizo, self).__init__()
+        
+        self.no_classes = 20
 
         self.linear_s_in = nn.Linear(20, 512, bias=False)
         self.linear_z_in = nn.Linear(1, 32, bias=False)
@@ -17,7 +19,7 @@ class Merizo(nn.Module):
         self.alibi = AlibiPositionalBias(heads=16, slope_factor=1)
 
         self.decoder_head = MaskTransformer(
-            n_cls=20,
+            n_cls=self.no_classes,
             n_layers=10,
             n_heads=16,
             d_model=512,
