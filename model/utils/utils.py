@@ -166,14 +166,7 @@ def instance_matrix(labels):
 
 
 def clean_domains(dom_ids: torch.tensor, min_num: int) -> torch.tensor:
-    """_summary_
-
-    Args:
-        dom_ids (torch.tensor): _description_
-        min_num (int): _description_
-
-    Returns:
-        torch.tensor: _description_
+    """ Divides any domains that are too small, equally into the domain before and after it.
     """
 
     dom_counts = torch.unique(dom_ids[dom_ids.nonzero()], return_counts=True)
@@ -187,28 +180,38 @@ def clean_domains(dom_ids: torch.tensor, min_num: int) -> torch.tensor:
 
     return dom_ids
 
-
-def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
-    """_summary_
-
-    Args:
-        dom_ids (torch.tensor): _description_
-        threshold (int): _description_
-
-    Returns:
-        torch.tensor: _description_
+def assimilate_short_terminal(dom_ids, dom_counts, threshold, termini):
+    """ Assimilates any short stretches of residues the N or C terminus into the 
+    proceeding/preceeding domain.
     """
+    if termini == 'C':
+        dom_counts = dom_counts.flip([0])
+        dom_ids = dom_ids.flip([0])
+        
+    for i, (c, d) in enumerate(zip(dom_counts, dom_ids)):
+        if c >= threshold or d == 0:
+            next_dom_id = dom_ids[i+1]
+            break
     
-    dom_ids_ = dom_ids
-    ndr_mask = dom_ids == 0
-
-    dom_counts = torch.ones_like(dom_ids_)
-    for i, d in enumerate(dom_ids_):
+    dom_ids[:i+1] = next_dom_id
+    
+    if termini == 'C':
+        return dom_ids.flip([0])
+    else:
+        return dom_ids
+    
+def get_segment_length(dom_ids):
+    """ Returns the length of each segment of a domain.
+        e.g. [1,1,1,1,1,1,5,5,5,5,5,2,2,2,2,2] ->
+             [6,6,6,6,6,6,5,5,5,5,5,5,5,5,5,5]
+    """
+    dom_counts = torch.ones_like(dom_ids)
+    for i, d in enumerate(dom_ids):
         if i == 0:
             counter = 1
             _idx = idx = i
         else:
-            if d == dom_ids_[i - 1]:
+            if d == dom_ids[i - 1]:
                 counter += 1
                 idx = i
             else:
@@ -216,15 +219,51 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
                 counter = 0
                 _idx = i
 
-        if i == len(dom_ids_) - 1:
+        if i == len(dom_ids) - 1:
             dom_counts[_idx : idx + 1] = counter
             
+    return dom_counts
+
+def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
+    """ Re-assigns short segments:
+        N-terminus: assimilated into first domain
+        C-terminus: assimilated into last domain
+        internal segments: divided between the preceeding and proceeding domain
+    """
+
+    dom_ids_ = dom_ids
+    dom_counts = get_segment_length(dom_ids)
+            
     if len(dom_counts <= threshold) != 0:
-        for i, d in enumerate(dom_counts):
-            if d.item() <= threshold:
-                dom_ids_[i] = dom_ids_[i - 1]
-                
-    dom_ids_[ndr_mask] = 0
+        # Assimilate short N-terminal stretches
+        dom_ids_ = assimilate_short_terminal(dom_ids_, dom_counts, threshold, termini='N')
+
+        # Assimilate short C-terminal stretches
+        dom_ids_ = assimilate_short_terminal(dom_ids_, dom_counts, threshold, termini='C')
+        
+        # Divide internal stretches of NDR that are too short
+        short_ndr = (dom_counts < threshold) * (dom_ids == 0)
+        non_terminal = torch.where(short_ndr.long() == 0)[0]
+        
+        # Trim off any N and C-terminal ndr stretches
+        short_ndr[:non_terminal[0]] = False
+        short_ndr[non_terminal[-1]:] = False
+
+        # Subdivide internal NDRs between domains
+        true_indices = torch.nonzero(short_ndr).flatten().tolist()
+
+        stretches = []
+        for _, g in groupby(enumerate(true_indices), lambda ix: ix[0] - ix[1]):
+            stretch = [x[1] for x in g]
+            stretches.append(torch.tensor(stretch))
+
+        # Print the stretches
+        for stretch in stretches:
+            start, end = stretch[0].item(), stretch[-1].item()
+            mid = torch.median(stretch).item()
+            
+            dom_ids_[start:mid+1] = dom_ids_[start-1]
+            dom_ids_[mid:end+1] = dom_ids_[end+1]
 
     return dom_ids_
 
