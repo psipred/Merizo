@@ -272,7 +272,7 @@ def separate_components(
         domain_map:torch.tensor, 
         z: torch.tensor, 
         domain_ids: torch.tensor, 
-        distance:float=10.0
+        distance:float=8.0
     ) -> torch.tensor:
     """ Separates domains in the domain map based on a minimum distance.
         Takes the intersect between the domain map and distance map 

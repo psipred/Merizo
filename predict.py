@@ -204,11 +204,11 @@ def run_merizo():
 
                     R_pred = instance_matrix(domain_ids)[0]
 
-                    domain_ids = separate_components(R_pred, z, domain_ids)
-                    
                     if len(torch.unique(domain_ids)) > 1:
                         domain_ids = clean_domains(domain_ids, MIN_DOMAIN_SIZE)
                         domain_ids = clean_singletons(domain_ids, MIN_FRAGMENT_SIZE)
+
+                    domain_ids = separate_components(R_pred, z, domain_ids)
 
                     # Recompute the domain map given the new assignment
                     R_pred = instance_matrix(domain_ids)[0]
