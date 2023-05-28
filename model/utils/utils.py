@@ -241,8 +241,8 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
         # Assimilate short C-terminal stretches
         dom_ids_ = assimilate_short_terminal(dom_ids_, dom_counts, threshold, termini='C')
         
-        # Divide internal stretches of NDR that are too short
-        short_ndr = (dom_counts < threshold) * (dom_ids == 0)
+        # Divide internal fragments that are too short
+        short_ndr = (dom_counts < threshold) # * (dom_ids == 0)
         non_terminal = torch.where(short_ndr.long() == 0)[0]
         
         # Trim off any N and C-terminal ndr stretches
