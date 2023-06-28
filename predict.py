@@ -177,7 +177,8 @@ def run_merizo():
     device = get_device(args.device)
     network = Merizo().to(device)
 
-    network.load_state_dict(read_split_weight_files('./weights/'), strict=True)
+    weights_dir = os.path.join(os.path.dirname(__file__), 'weights')
+    network.load_state_dict(read_split_weight_files(weights_dir), strict=True)
     network.eval()
 
     for pdb_path in args.input:
