@@ -181,98 +181,99 @@ def run_merizo():
     network.load_state_dict(read_split_weight_files(weights_dir), strict=True)
     network.eval()
 
-    for pdb_path in args.input:
-        if os.path.exists(pdb_path):
-            start_time = time.time()
+    with torch.no_grad():
+        for pdb_path in args.input:
+            if os.path.exists(pdb_path):
+                start_time = time.time()
 
-            pdb_name = os.path.basename(pdb_path)
-            outname = pdb_path[:-4] + "_" + label
+                pdb_name = os.path.basename(pdb_path)
+                outname = pdb_path[:-4] + "_" + label
 
-            if not os.path.exists(outname):
-                
-                try: 
-                    s, z, r, t, ri, pdb, _ = generate_features_domain(pdb_path, device)
-                    nres = s.shape[1]
-
-                    inputs = (s, z, r, t, ri)
-                    domain_ids, conf_res = network(inputs)
-
-                    # If --iterate mode, iteratively segment domains 
-                    if args.iterate:
-                        if nres > DOM_AVE * 2:
-                            domain_ids, conf_res = iterative_segmentation(
-                                network, inputs, domain_ids, conf_res, args.max_iterations)
-
-                    R_pred = instance_matrix(domain_ids)[0]
+                if not os.path.exists(outname):
                     
-                    domain_ids = separate_components(R_pred, z, domain_ids)
+                    try: 
+                        s, z, r, t, ri, pdb, _ = generate_features_domain(pdb_path, device)
+                        nres = s.shape[1]
 
-                    if len(torch.unique(domain_ids)) > 1:
-                        domain_ids = clean_domains(domain_ids, MIN_DOMAIN_SIZE)
-                        domain_ids = clean_singletons(domain_ids, MIN_FRAGMENT_SIZE)
+                        inputs = (s, z, r, t, ri)
+                        domain_ids, conf_res = network(inputs)
 
-                    # Recompute the domain map given the new assignment
-                    R_pred = instance_matrix(domain_ids)[0]
-                    
-                    if args.shuffle_indices:
-                        domain_ids = shuffle_ids(domain_ids)
-                    else:
-                        domain_ids = remap_ids(domain_ids)
-                    
-                    conf_global = conf_res.mean()
-                    
-                    _, ndoms = get_ids(domain_ids)
+                        # If --iterate mode, iteratively segment domains 
+                        if args.iterate:
+                            if nres > DOM_AVE * 2:
+                                domain_ids, conf_res = iterative_segmentation(
+                                    network, inputs, domain_ids, conf_res, args.max_iterations)
 
-                    # --------------
-                    # Outputs 
-                    # --------------
-
-                    dom_str = format_dom_str(domain_ids, ri)
-                    
-                    nres = domain_ids.shape[0]
-                    nres_domain = domain_ids.count_nonzero()
-                    nres_ndomain = nres - nres_domain
-
-                    if args.save_pdb or args.save_domains:
-                        write_pdb_predictions(
-                            pdb,
-                            domain_ids,
-                            conf_res,
-                            ri,
-                            args.save_domains,
-                            args.conf_filter,
-                            args.plddt_filter,
-                            outname,
-                        )
-
-                    if args.save_fasta:
-                        write_fasta(pdb, outname, pdb_name[:-4])
-
-                    if args.save_pdf:
                         R_pred = instance_matrix(domain_ids)[0]
-                        p_conf = torch.sqrt(conf_res[None, :] * conf_res[:, None])
-                        p_conf = p_conf * R_pred
+                        
+                        domain_ids = separate_components(R_pred, z, domain_ids)
 
-                        title = "{} | {} predicted domains".format(pdb_name, ndoms)
-                        write_pdf_predictions(R_pred, p_conf, title, outname)
+                        if len(torch.unique(domain_ids)) > 1:
+                            domain_ids = clean_domains(domain_ids, MIN_DOMAIN_SIZE)
+                            domain_ids = clean_singletons(domain_ids, MIN_FRAGMENT_SIZE)
 
-                    # if args.save_domains:
-                    end_time = time.time() - start_time
-                    print("{}\t{}\t{}\t{}\t{}\t{:.5f}\t{:.5f}\t{}".format(
-                        pdb_name,
-                        nres,
-                        nres_domain,
-                        nres_ndomain,
-                        ndoms,
-                        conf_global.item(),
-                        end_time,
-                        dom_str,
-                    ))
+                        # Recompute the domain map given the new assignment
+                        R_pred = instance_matrix(domain_ids)[0]
+                        
+                        if args.shuffle_indices:
+                            domain_ids = shuffle_ids(domain_ids)
+                        else:
+                            domain_ids = remap_ids(domain_ids)
+                        
+                        conf_global = conf_res.mean()
+                        
+                        _, ndoms = get_ids(domain_ids)
 
-                except:
-                    print("{}\tSegmentation failed.".format(pdb_name))
-        else:
-            print("Cannot find file at {}".format(pdb_path))
+                        # --------------
+                        # Outputs 
+                        # --------------
+
+                        dom_str = format_dom_str(domain_ids, ri)
+                        
+                        nres = domain_ids.shape[0]
+                        nres_domain = domain_ids.count_nonzero()
+                        nres_ndomain = nres - nres_domain
+
+                        if args.save_pdb or args.save_domains:
+                            write_pdb_predictions(
+                                pdb,
+                                domain_ids,
+                                conf_res,
+                                ri,
+                                args.save_domains,
+                                args.conf_filter,
+                                args.plddt_filter,
+                                outname,
+                            )
+
+                        if args.save_fasta:
+                            write_fasta(pdb, outname, pdb_name[:-4])
+
+                        if args.save_pdf:
+                            R_pred = instance_matrix(domain_ids)[0]
+                            p_conf = torch.sqrt(conf_res[None, :] * conf_res[:, None])
+                            p_conf = p_conf * R_pred
+
+                            title = "{} | {} predicted domains".format(pdb_name, ndoms)
+                            write_pdf_predictions(R_pred, p_conf, title, outname)
+
+                        # if args.save_domains:
+                        end_time = time.time() - start_time
+                        print("{}\t{}\t{}\t{}\t{}\t{:.5f}\t{:.5f}\t{}".format(
+                            pdb_name,
+                            nres,
+                            nres_domain,
+                            nres_ndomain,
+                            ndoms,
+                            conf_global.item(),
+                            end_time,
+                            dom_str,
+                        ))
+
+                    except:
+                        print("{}\tSegmentation failed.".format(pdb_name))
+            else:
+                print("Cannot find file at {}".format(pdb_path))
 
 
 if __name__ == "__main__":
