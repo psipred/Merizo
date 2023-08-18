@@ -1,5 +1,5 @@
 einops
-matplotlib==3.7.1
+matplotlib
 natsort==8.3.1
 networkx==3.1
 numpy==1.24.3
