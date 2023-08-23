@@ -34,7 +34,6 @@ class Attention(nn.Module):
         super().__init__()
         self.heads = heads
         head_dim = dim // heads
-        self.scale = head_dim**-0.5
         self.attn = None
 
         self.qkv = nn.Linear(dim, dim * 3)
