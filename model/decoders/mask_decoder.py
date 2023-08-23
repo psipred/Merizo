@@ -60,7 +60,7 @@ class Attention(nn.Module):
         if bias is not None:
             qk = qk + bias
 
-        attn = qk  # * self.scale # alibi disables the scaling
+        attn = qk 
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
