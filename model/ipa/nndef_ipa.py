@@ -190,7 +190,6 @@ class InvariantPointAttention(nn.Module):
             permute_final_dims(k, (1, 2, 0)),  # [*, H, C_hidden, N_res]
         )
         
-        # If alibi, then don't scale by sqrt(d)
         a *= math.sqrt(1.0 / (3 * self.c_hidden))
             
         # [*, N_res, N_res, H]

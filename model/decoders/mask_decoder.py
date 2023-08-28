@@ -34,7 +34,6 @@ class Attention(nn.Module):
         super().__init__()
         self.heads = heads
         head_dim = dim // heads
-        self.scale = head_dim**-0.5
         self.attn = None
 
         self.qkv = nn.Linear(dim, dim * 3)
@@ -60,7 +59,7 @@ class Attention(nn.Module):
         if bias is not None:
             qk = qk + bias
 
-        attn = qk  # * self.scale # alibi disables the scaling
+        attn = qk 
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
