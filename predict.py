@@ -16,6 +16,7 @@ from model.utils.utils import (
     instance_matrix,
     write_pdf_predictions,
     write_pdb_predictions,
+    write_domain_idx,
     write_fasta,
     clean_domains,
     clean_singletons,
@@ -166,10 +167,11 @@ def run_merizo():
     parser.add_argument("--iterate", dest="iterate", action="store_true", help=f"If used, domains under a length threshold (default: {DOM_AVE} residues) will be re-segmented.")
     parser.add_argument("--max_iterations", dest="max_iterations", type=int, default=3, help="(int [1, inf]) Specify the maximum number of re-segmentations that can occur.")
     parser.add_argument("--shuffle_indices", dest="shuffle_indices", action="store_true", help="Shuffle domain indices - increases contrast between domain colours in PyMOL.")
+    parser.add_argument("--return_indices", dest="return_indices", action="store_true", help="Return the domain indices for all residues.")
     
     args = parser.parse_args()
 
-    label = "merizo-v2"
+    label = "merizo_v2"
 
     if args.iterate:
         label = label + f'-iterate-{args.max_iterations}'
@@ -187,7 +189,11 @@ def run_merizo():
                 start_time = time.time()
 
                 pdb_name = os.path.basename(pdb_path)
-                outname = pdb_path[:-4] + "_" + label
+                fn, _ = os.path.splitext(pdb_path)
+                outname = fn + "_" + label
+                
+                if args.return_indices:
+                    dom_idx_name = outname + '.idx'
 
                 if not os.path.exists(outname):
                     
@@ -248,6 +254,9 @@ def run_merizo():
 
                         if args.save_fasta:
                             write_fasta(pdb, outname, pdb_name[:-4])
+                            
+                        if args.return_indices:
+                            write_domain_idx(dom_idx_name, domain_ids, ri)
 
                         if args.save_pdf:
                             R_pred = instance_matrix(domain_ids)[0]

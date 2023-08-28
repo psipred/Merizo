@@ -456,7 +456,19 @@ def write_fasta(pdb: np.ndarray, outname: str, header: str):
     with open(outname + ".fasta", "w") as f:
         f.write(">" + header + "\n")
         f.write(fasta + "\n")
+        
+def write_domain_idx(outname: str, domain_idx: torch.int, ri: torch.int):
+    
+    if ri.shape[0] == 1:
+        ri = ri.squeeze(0)
+        
+    if domain_idx.shape[0] == 1:
+        domain_idx = domain_idx.squeeze(0)
+        
+    assign = ','.join(["{:.0f}:{:.0f}".format(r.item(), i.item()) for r, i in zip(ri, domain_idx)])
 
+    with open(outname, 'w') as f:
+        f.write(assign)
 
 def format_dom_str(dom_cons: torch.tensor, ri: torch.tensor) -> list:
     """Formats predicted domain ids into residue ranges.
