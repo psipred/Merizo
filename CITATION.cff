@@ -1,0 +1,15 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: Andy M.
+  given-names: Lau
+  orcid: https://orcid.org/0000-0003-0572-7826
+- family-names: Shaun M.
+  given-names: Kandathil
+  orcid: https://orcid.org/0000-0002-2671-2140
+- family-names: David T.
+  given-names: Jones
+  orcid: https://orcid.org/0000-0001-8626-3765
+title: Merizo: a rapid and accurate protein domain segmentation method using invariant point attention
+version: v1.0.0
+date-released: 2023-10-13
