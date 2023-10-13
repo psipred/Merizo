@@ -1,0 +1,25 @@
+The format of CATH-X.csv files are as follows:
+
+------------------------------------------------------------
+Column 1:	PDB code
+Column 2:	PDB-chain ID
+Column 3:	Chain ID
+Column 4:	No. CATH domains
+Column 5:	No. unique CATH superfamilies
+Column 6:	No. residues (estimate, according to CATH)
+Column 7:	Domain ranges and labels
+------------------------------------------------------------
+
+For the purposes of training and testing Merizo, only columns 2 and 7 are used. The rest are decorative.
+
+The format of domain boundaries listed in Column 7 are as follows:
+
+Domains are delimited by the '|' character.
+Discontinuous domains are delimited by the '_' character.
+Domain ranges (e.g. start and end residues) are delimited by the '-' character.
+
+dom1seg1start-dom1seg1end_dom1seg2start-dom1seg2end:label1,dom2seg1start-dom2seg1end:label2
+
+Each domain range is proceeded by a ':X_Y' label where X and Y are the CATH topology and superfamily IDs. This value is not provided by CATH and was an arbitrary number assigned to the topology and superfamily to allow the file to be used for other training tasks. For the purposed of Merizo, the label only matters if the value is ':999_999' which denotes a domain within the CATH 'holding pen' and signifies that this domain should be masked during training. 
+
+The format of AFDB-X.csv files largely follow the CATH files, but with dummy values replacing columns 4, 5 and 6. 
