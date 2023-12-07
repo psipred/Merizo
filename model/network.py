@@ -6,10 +6,11 @@ from .ipa.nndef_ipa_primitives import Rigid, Rotation
 from .posenc.alibi import AlibiPositionalBias
 from .decoders.mask_decoder import MaskTransformer
 
+
 class Merizo(nn.Module):
     def __init__(self):
         super(Merizo, self).__init__()
-        
+
         self.no_classes = 20
 
         self.linear_s_in = nn.Linear(20, 512, bias=False)
@@ -29,9 +30,9 @@ class Merizo(nn.Module):
         )
 
     def forward(self, inputs, mask=None):
-        
+
         s, z, r, t, ri = inputs
-        
+
         if mask is not None:
             s = s[:, mask]
             z = z[:, mask][:, :, mask]
@@ -46,8 +47,8 @@ class Merizo(nn.Module):
         )
 
         domain_ids, conf_res = self.decoder_head(
-            ipa_out, 
+            ipa_out,
             bias=self.alibi(ri.squeeze(0), clip=True)
         )
-        
+
         return domain_ids, conf_res
