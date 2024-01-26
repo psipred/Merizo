@@ -71,7 +71,7 @@ By default if no device flag (`-d`) is specified, if a GPU is available, it will
   --conf_filter CONF_FILTER
                         (float, [0-1]) If specified, only domains with a pIoU above this threshold will be saved.
   --plddt_filter PLDDT_FILTER
-                        (float, [0-1]) If specified, only domain with a plDDT above this threshold will be saved. Note: if used on a non-AF structure, this will correspond to crystallographic b-factors.
+                        (float, [0-100]) If specified, only domain with a plDDT above this threshold will be saved. Note: if used on a non-AF structure, this will correspond to crystallographic b-factors.
   --iterate             If used, domains under a length threshold (default: 200 residues) will be re-segmented.
   --max_iterations MAX_ITERATIONS
                         (int [1, inf]) Specify the maximum number of re-segmentations that can occur.
