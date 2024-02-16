@@ -164,6 +164,7 @@ def run_merizo():
     parser.add_argument("--conf_filter", dest="conf_filter", type=float, default=None, help="(float, [0-1]) If specified, only domains with a pIoU above this threshold will be saved. ")
     parser.add_argument("--plddt_filter", dest="plddt_filter", type=float, default=None, help="(float, [0-1]) If specified, only domain with a plDDT above this threshold will be saved. Note: if used on a non-AF structure, this will correspond to crystallographic b-factors.")
     parser.add_argument("--iterate", dest="iterate", action="store_true", help=f"If used, domains under a length threshold (default: {DOM_AVE} residues) will be re-segmented.")
+    parser.add_argument("--length_conditional_iterate", dest="iterate", action="store_true", help=f"If used, --iterate is set to true when the input sequence length is 512 residues or greater")
     parser.add_argument("--max_iterations", dest="max_iterations", type=int, default=3, help="(int [1, inf]) Specify the maximum number of re-segmentations that can occur.")
     parser.add_argument("--shuffle_indices", dest="shuffle_indices", action="store_true", help="Shuffle domain indices - increases contrast between domain colours in PyMOL.")
     
