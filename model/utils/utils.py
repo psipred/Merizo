@@ -31,14 +31,14 @@ def get_device(device: str) -> torch.device:
     """
 
     if torch.cuda.is_available() and device == "cuda":
-        device = torch.device("cuda") # GPU
-        
+        device = torch.device("cuda")  # GPU
+
     elif device == "cpu" or (not torch.cuda.is_available() and device == "cuda"):
         device = torch.device("cpu")  # CPU
-        
+
     elif device == "mps":
         device = torch.device("mps")  # Apple Sllicon
-        
+
     else:
         print("Device (-d) needs to be either 'cpu', 'cuda' or 'mps'.")
         exit()
@@ -180,6 +180,7 @@ def clean_domains(dom_ids: torch.tensor, min_num: int) -> torch.tensor:
 
     return dom_ids
 
+
 def assimilate_short_terminal(dom_ids, dom_counts, threshold, termini):
     """ Assimilates any short stretches of residues the N or C terminus into the 
     proceeding/preceeding domain.
@@ -187,19 +188,20 @@ def assimilate_short_terminal(dom_ids, dom_counts, threshold, termini):
     if termini == 'C':
         dom_counts = dom_counts.flip([0])
         dom_ids = dom_ids.flip([0])
-        
+
     for i, (c, d) in enumerate(zip(dom_counts, dom_ids)):
         if c >= threshold or d == 0:
             next_dom_id = dom_ids[i+1]
             break
-    
+
     dom_ids[:i+1] = next_dom_id
-    
+
     if termini == 'C':
         return dom_ids.flip([0])
     else:
         return dom_ids
-    
+
+
 def get_segment_length(dom_ids):
     """ Returns the length of each segment of a domain.
         e.g. [1,1,1,1,1,1,5,5,5,5,5,2,2,2,2,2] ->
@@ -215,14 +217,15 @@ def get_segment_length(dom_ids):
                 counter += 1
                 idx = i
             else:
-                dom_counts[_idx : idx + 1] = counter
+                dom_counts[_idx: idx + 1] = counter
                 counter = 0
                 _idx = i
 
         if i == len(dom_ids) - 1:
-            dom_counts[_idx : idx + 1] = counter
-            
+            dom_counts[_idx: idx + 1] = counter
+
     return dom_counts
+
 
 def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
     """ Re-assigns short segments:
@@ -233,18 +236,20 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
 
     dom_ids_ = dom_ids
     dom_counts = get_segment_length(dom_ids)
-            
+
     if len(dom_counts <= threshold) != 0:
         # Assimilate short N-terminal stretches
-        dom_ids_ = assimilate_short_terminal(dom_ids_, dom_counts, threshold, termini='N')
+        dom_ids_ = assimilate_short_terminal(
+            dom_ids_, dom_counts, threshold, termini='N')
 
         # Assimilate short C-terminal stretches
-        dom_ids_ = assimilate_short_terminal(dom_ids_, dom_counts, threshold, termini='C')
-        
+        dom_ids_ = assimilate_short_terminal(
+            dom_ids_, dom_counts, threshold, termini='C')
+
         # Divide internal fragments that are too short
-        short_ndr = (dom_counts < threshold) # * (dom_ids == 0)
+        short_ndr = (dom_counts < threshold)  # * (dom_ids == 0)
         non_terminal = torch.where(short_ndr.long() == 0)[0]
-        
+
         # Trim off any N and C-terminal ndr stretches
         short_ndr[:non_terminal[0]] = False
         short_ndr[non_terminal[-1]:] = False
@@ -261,7 +266,7 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
         for stretch in stretches:
             start, end = stretch[0].item(), stretch[-1].item()
             mid = torch.median(stretch).item()
-            
+
             dom_ids_[start:mid+1] = dom_ids_[start-1]
             dom_ids_[mid:end+1] = dom_ids_[end+1]
 
@@ -269,11 +274,11 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
 
 
 def separate_components(
-        domain_map:torch.tensor, 
-        z: torch.tensor, 
-        domain_ids: torch.tensor, 
-        distance:float=8.0
-    ) -> torch.tensor:
+    domain_map: torch.tensor,
+    z: torch.tensor,
+    domain_ids: torch.tensor,
+    distance: float = 8.0
+) -> torch.tensor:
     """ Separates domains in the domain map based on a minimum distance.
         Takes the intersect between the domain map and distance map 
         graphs to disconnect discontinuous associations between segments
@@ -308,7 +313,7 @@ def separate_components(
     # Iterate over each component and re-assign a domain index
     components = list(nx.connected_components(G_int))
     labels_new = torch.zeros_like(domain_ids)
-    
+
     for i, c in enumerate(components):
         labels_new[list(c)] = i + 1
 
@@ -375,7 +380,7 @@ def write_pdb_predictions(
     comment: list = None,
 ):
     """_summary_
-    
+
     Re-writes occ with domain ids, b-factors remain b-factors or AF2 plDDT. Confidence 
     estimates are in new 'conf' field.
 
@@ -396,10 +401,10 @@ def write_pdb_predictions(
     for r in pdb["resi"]:
         ids.append(dom_ids[ri.squeeze(0) == r].item())
         confs.append(conf[ri.squeeze(0) == r].item())
-        
+
     pdb["occ"] = np.array(ids)
     pdb["conf"] = np.array(confs)
-    
+
     name = os.path.basename(outname)
 
     if save_domains:
@@ -411,34 +416,36 @@ def write_pdb_predictions(
             p_ca = select_from_mol([p], 'n', ['CA'])[0]
             dom_conf = np.mean(p_ca['conf'])
             dom_plddt = np.mean(p_ca['b'])
-            
+
             dom_str = format_dom_str(
-                torch.tensor(p_ca['occ']), 
+                torch.tensor(p_ca['occ']),
                 torch.tensor(p_ca['resi']).unsqueeze(0)
             )
-            
+
             if conf_filter is not None and plddt_filter is None:
                 if dom_conf >= conf_filter:
                     output = True
-                    
+
             if plddt_filter is not None and conf_filter is None:
                 if dom_plddt >= plddt_filter:
                     output = True
-                    
+
             if conf_filter is not None and plddt_filter is not None:
                 if dom_conf >= conf_filter and dom_plddt >= plddt_filter:
                     output = True
-                    
+
             if conf_filter is None and plddt_filter is None:
                 output = True
 
             if output:
                 with open(outname + '.domains', 'a+') as f:
                     f.write("{}\t{:.0f}\t{}\t{:.3f}\t{:.3f}\t{:.0f}\t{}\n".format(
-                        name, i+1, len(p_ca), dom_conf, dom_plddt, u.item(), dom_str
-                    ))
-                
-                write_pdb(p, outname + "_" + str(i+1).zfill(2) + ".pdb2", comment)
+                        name, i +
+                            1, len(p_ca), dom_conf, dom_plddt, u.item(), dom_str
+                            ))
+
+                write_pdb(p, outname + "_" +
+                          str(i+1).zfill(2) + ".pdb2", comment)
 
     write_pdb(pdb, outname + ".pdb2", comment)
 
@@ -456,6 +463,21 @@ def write_fasta(pdb: np.ndarray, outname: str, header: str):
     with open(outname + ".fasta", "w") as f:
         f.write(">" + header + "\n")
         f.write(fasta + "\n")
+
+
+def write_domain_idx(outname: str, domain_idx: torch.int, ri: torch.int):
+
+    if ri.shape[0] == 1:
+        ri = ri.squeeze(0)
+
+    if domain_idx.shape[0] == 1:
+        domain_idx = domain_idx.squeeze(0)
+
+    assign = ','.join(["{:.0f}:{:.0f}".format(r.item(), i.item())
+                      for r, i in zip(ri, domain_idx)])
+
+    with open(outname, 'w') as f:
+        f.write(assign + '\n')
 
 
 def format_dom_str(dom_cons: torch.tensor, ri: torch.tensor) -> list:
