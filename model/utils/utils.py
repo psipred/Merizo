@@ -445,7 +445,7 @@ def write_pdb_predictions(
                             ))
 
                 write_pdb(p, outname + "_" +
-                          str(i+1).zfill(2) + ".pdb2", comment)
+                          str(i+1).zfill(2) + ".dom_pdb", comment)
 
     write_pdb(pdb, outname + ".pdb2", comment)
 
