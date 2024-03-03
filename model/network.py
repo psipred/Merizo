@@ -29,9 +29,9 @@ class Merizo(nn.Module):
             dropout=0,
         )
 
-    def forward(self, inputs, mask=None):
+    def forward(self, features, mask=None):
 
-        s, z, r, t, ri = inputs
+        s, z, r, t, ri = features['s'], features['z'], features['r'], features['t'], features['ri']
 
         if mask is not None:
             s = s[:, mask]

@@ -65,7 +65,7 @@ def generate_features_domain(file: str, device: torch.device):
     t = t.unsqueeze(0).float().to(device)
     ri = ri.unsqueeze(0).float().to(device)
 
-    return s, z, r, t, ri, pdb, b
+    return {'s': s, 'z': z, 'r': r, 't': t, 'ri': ri, 'pdb': pdb, 'b': b, 'nres': s.shape[1]}
 
 def pdb_to_features(file, resi=None):
 
