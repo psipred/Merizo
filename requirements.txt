@@ -6,3 +6,4 @@ numpy
 rotary_embedding_torch
 scipy
 setuptools
+torch==2.0.1
