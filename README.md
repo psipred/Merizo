@@ -4,7 +4,7 @@ Merizo is a fast and accurate deep learning method for domain segmentation in co
 
 If you use Merizo, please cite the paper: 
 
-   **Lau et al., 2023. Merizo: a rapid and accurate protein domain segmentation method using invariant point attention. bioRxiv.** ([link](https://www.biorxiv.org/content/10.1101/2023.02.19.529114v2⋅⋅* ))  
+   **Lau et al., 2023. Merizo: a rapid and accurate protein domain segmentation method using invariant point attention. Nature Communications.** ([link](https://www.nature.com/articles/s41467-023-43934-4))  
 
 ## Installation
 
