@@ -45,14 +45,14 @@ The iterative mode should be used for processing any long models (~ >800 residue
 
 #### Standard mode
 ```
-python pred.py -d cpu -i examples/2xdqA.pdb
-python pred.py -d cpu -i examples/*.pdb --save_domains --save_pdf --save_fasta
-python pred.py -d cpu -i examples/2xdqA.pdb --save_domains --plddt_filter
+python predict.py -d cpu -i examples/2xdqA.pdb
+python predict.py -d cpu -i examples/*.pdb --save_domains --save_pdf --save_fasta
+python predict.py -d cpu -i examples/2xdqA.pdb --save_domains --plddt_filter
 ```
 
 #### Iterative mode
 ```
-python pred.py -d cpu -i examples/AF-Q96PD2-F1-model_v4.pdb --iterate
+python predict.py -d cpu -i examples/AF-Q96PD2-F1-model_v4.pdb --iterate
 ```
 
 By default if no device flag (`-d`) is specified, if a GPU is available, it will be used. If no GPU is available, Merizo will default to using CPU. On Apple Silicon devices, the `-d mps` option can be given to use the Metal Performance Shaders (MPS) backend.
@@ -94,7 +94,7 @@ Residue ranges are delimited by `-`, e.g. residues 1 to 200 are `1-200`. Separat
 
 If processing a large number of files, it may be useful to redirect the output into a file using `>` for reference. This can be performed by:
 ```
-python pred.py -d cpu -i examples/*.pdb > examples/results.txt
+python predict.py -d cpu -i examples/*.pdb > examples/results.txt
 ```
 
 #### PDB outputs
