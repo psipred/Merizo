@@ -273,12 +273,7 @@ def clean_singletons(dom_ids: torch.tensor, threshold: int) -> torch.tensor:
     return dom_ids_
 
 
-def separate_components(
-    domain_map: torch.tensor,
-    z: torch.tensor,
-    domain_ids: torch.tensor,
-    distance: float = 8.0
-) -> torch.tensor:
+def separate_components(feature_dict: dict, distance: float = 8.0) -> torch.tensor:
     """ Separates domains in the domain map based on a minimum distance.
         Takes the intersect between the domain map and distance map 
         graphs to disconnect discontinuous associations between segments
@@ -294,6 +289,8 @@ def separate_components(
     Returns:
         torch.tensor:               [N]     updated domain indices [0, ndom]
     """
+    
+    domain_map, z, domain_ids = feature_dict['domain_map'], feature_dict['z'],  feature_dict['domain_ids']
 
     # Re-assign indices based on distance cut off between domains
     dm = z.reshape(z.shape[1], z.shape[1])
@@ -304,8 +301,7 @@ def separate_components(
 
     G_int = nx.intersection(
         nx.from_numpy_array(domain_map.detach().cpu().numpy()),
-        nx.from_numpy_array(
-            (dm <= distance).bool().detach().cpu().numpy()),
+        nx.from_numpy_array( (dm <= distance).bool().detach().cpu().numpy()),
     )
 
     G_int.remove_nodes_from(list(nx.isolates(G_int)))
@@ -331,12 +327,7 @@ def NonLinCdict(steps, hexcol_array):
     return cdict
 
 
-def write_pdf_predictions(
-    R_pred: torch.tensor,
-    confidence: torch.tensor,
-    title: str,
-    outname: str,
-):
+def write_pdf_predictions(features: dict, name_dict: str):
     """_summary_
 
     Args:
@@ -345,6 +336,12 @@ def write_pdf_predictions(
         title (torc)
         outname (str): _description_
     """
+    
+    domain_map = features['domain_map']
+    confidence_map = torch.sqrt(features['conf_res'][None, :] * features['conf_res'][:, None])
+    confidence_map = confidence_map * domain_map
+
+    title = "{} | {} predicted domains".format(name_dict['pdb_name'], features['ndom'])
 
     hc = ["#e6e6f3", "#cccce6", "#9999cc", "#6666b3", "#33339a", "#000080"]
     th = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
@@ -357,26 +354,23 @@ def write_pdf_predictions(
     _, ax = plt.subplots(1, n_plots, figsize=(n_plots * width, width))
     plt.gcf().suptitle(title, fontsize=18)
 
-    ax[0].matshow(R_pred.cpu().detach().numpy(), cmap=cm)
-    ax[1].matshow(confidence.cpu().detach().numpy(), cmap=cm)
+    ax[0].matshow(domain_map.cpu().detach().numpy(), cmap=cm)
+    ax[1].matshow(confidence_map.cpu().detach().numpy(), cmap=cm)
 
     ax[0].set(xlabel="Predicted Domain Map")
     ax[1].set(xlabel="Domain Confidence")
 
     plt.tight_layout()
-    plt.savefig(outname + ".pdf", format="pdf")
+    plt.savefig(name_dict['pdb_out'] + ".pdf", format="pdf")
     plt.close()
 
 
 def write_pdb_predictions(
-    pdb: np.ndarray,
-    dom_ids: torch.tensor,
-    conf: torch.tensor,
-    ri: torch.tensor,
+    features: dict,
+    name_dict: dict,
     save_domains: bool,
     conf_filter: bool,
     plddt_filter: bool,
-    outname: str,
     comment: list = None,
 ):
     """_summary_
@@ -394,6 +388,9 @@ def write_pdb_predictions(
         outname (str): _description_
         comment (list, optional): _description_. Defaults to None.
     """
+    
+    pdb, dom_ids, conf, ri = features['pdb'], features['domain_ids'], features['conf_res'], features['ri']
+    outname = name_dict['pdb_out']
 
     pdb["occ"] = 0
 
@@ -440,17 +437,14 @@ def write_pdb_predictions(
             if output:
                 with open(outname + '.domains', 'a+') as f:
                     f.write("{}\t{:.0f}\t{}\t{:.3f}\t{:.3f}\t{:.0f}\t{}\n".format(
-                        name, i +
-                            1, len(p_ca), dom_conf, dom_plddt, u.item(), dom_str
-                            ))
+                        name, i + 1, len(p_ca), dom_conf, dom_plddt, u.item(), dom_str))
 
-                write_pdb(p, outname + "_" +
-                          str(i+1).zfill(2) + ".dom_pdb", comment)
+                write_pdb(p, outname + "_" + str(i+1).zfill(2) + ".dom_pdb", comment)
 
     write_pdb(pdb, outname + ".pdb2", comment)
 
 
-def write_fasta(pdb: np.ndarray, outname: str, header: str):
+def write_fasta(pdb: np.ndarray, name_dict: dict):
     """_summary_
 
     Args:
@@ -460,12 +454,15 @@ def write_fasta(pdb: np.ndarray, outname: str, header: str):
     """
     fasta = pdb_to_fasta(pdb)
 
-    with open(outname + ".fasta", "w") as f:
-        f.write(">" + header + "\n")
+    with open(name_dict['pdb_out'] + ".fasta", "w") as f:
+        f.write(">" + os.path.basename(name_dict['pdb_name']) + "\n")
         f.write(fasta + "\n")
 
 
-def write_domain_idx(outname: str, domain_idx: torch.int, ri: torch.int):
+def write_domain_idx(features: dict, name_dict: dict):
+
+    ri, domain_idx = features['ri'], features['domain_ids']
+    outname = name_dict['pdb_out'] + '.idx'
 
     if ri.shape[0] == 1:
         ri = ri.squeeze(0)
@@ -480,7 +477,7 @@ def write_domain_idx(outname: str, domain_idx: torch.int, ri: torch.int):
         f.write(assign + '\n')
 
 
-def format_dom_str(dom_cons: torch.tensor, ri: torch.tensor) -> list:
+def format_dom_str(domain_ids: torch.tensor, ri: torch.tensor) -> list:
     """Formats predicted domain ids into residue ranges.
         Domains delimited by ,
         Discontinuous segments delimited by _
@@ -497,8 +494,8 @@ def format_dom_str(dom_cons: torch.tensor, ri: torch.tensor) -> list:
     """
 
     dom_str = []
-    for d in torch.unique(dom_cons[dom_cons != 0], sorted=False):
-        dom_resi = ri[0, dom_cons == d].long().cpu().tolist()
+    for d in torch.unique(domain_ids[domain_ids != 0], sorted=False):
+        dom_resi = ri[0, domain_ids == d].long().cpu().tolist()
 
         strs = []
         for k, g in groupby(enumerate(dom_resi), lambda ix: ix[0] - ix[1]):
