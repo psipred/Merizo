@@ -170,6 +170,7 @@ def run_merizo():
                         help="Include to save parsed domains as separate pdb files. Also saves the full pdb.")
     parser.add_argument("--save_fasta", dest="save_fasta", action="store_true",
                         help="Include to save a fasta file of the input pdb.")
+    parser.add_argument("--output_headers", action="store_true", default=False, help="Select whether output TSV files have headers or not")
     parser.add_argument("--conf_filter", dest="conf_filter", type=float, default=None,
                         help="(float, [0-1]) If specified, only domains with a pIoU above this threshold will be saved. ")
     parser.add_argument("--plddt_filter", dest="plddt_filter", type=float, default=None,
@@ -292,6 +293,8 @@ def run_merizo():
 
                         # if args.save_domains:
                         end_time = time.time() - start_time
+                        if args.output_headers:
+                            print("name\tnres\tnres_dom\tnres_ndrvndom\tpIoU\truntime\tresult\n")
                         print("{}\t{}\t{}\t{}\t{}\t{:.5f}\t{:.5f}\t{}".format(
                             pdb_name,
                             nres,
