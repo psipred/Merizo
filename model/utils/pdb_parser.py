@@ -18,7 +18,7 @@ def write_pdb(mol, name, comments=None):
                 f.write("REMARK  %s\n" % line)
 
 
-def open_pdb(file: str, ignore_H: bool = False):
+def open_pdb(file: str, pdb_chain: str="A", ignore_H: bool = False):
     """ Return the coordinates of a PDB file in a numpy structured array.
         Residues declared in 'exclude' will be ignored. Declared in 'specials'
         will be read even if the residue is a HETATM.
@@ -61,30 +61,33 @@ def open_pdb(file: str, ignore_H: bool = False):
                         continue
 
                     if n in only_atoms:
-                        mol.append(
-                            (
-                                line[:6].strip(),       # type, e.g. ATOM
-                                line[6:11],             # i, atom number
-                                n,                      # n, atom name
-                                line[16:17].strip(),    # alt, alternative id
-                                resn,                   # resn, residue name
-                                line[20:22].strip(),    # chain
-                                line[22:26],            # resi, residue id
-                                line[30:38],            # x coordinate
-                                line[38:46],            # y coordinate
-                                line[46:54],            # z coordinate
-                                line[54:60],            # occupancy
-                                line[60:66],            # b-factor
-                                0.                      # confidence 
+                        if line[20:22].strip() == pdb_chain:
+                            mol.append(
+                                (
+                                    line[:6].strip(),       # type, e.g. ATOM
+                                    line[6:11],             # i, atom number
+                                    n,                      # n, atom name
+                                    line[16:17].strip(),    # alt, alternative id
+                                    resn,                   # resn, residue name
+                                    line[20:22].strip(),    # chain
+                                    line[22:26],            # resi, residue id
+                                    line[30:38],            # x coordinate
+                                    line[38:46],            # y coordinate
+                                    line[46:54],            # z coordinate
+                                    line[54:60],            # occupancy
+                                    line[60:66],            # b-factor
+                                    0.                      # confidence 
+                                )
                             )
-                        )
 
             if line[:6] == 'ENDMDL' or line[:3] == 'END' or i == len(pdbfile)-1: # or line[:3] == 'TER':
                 mol = np.array(mol, dtype=dtype)
                 molecules.append(mol)
                 mol = []
                 break
-
+    if len(molecules[0]) == 0:
+        print("Chain ID given not present in PDB file")
+        exit(128)   
     return molecules
 
 

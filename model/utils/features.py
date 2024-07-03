@@ -27,7 +27,7 @@ resndict = {'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D', 'CYS': 'C',
 aa_trans = str.maketrans('ARNDCQEGHILKMFPSTWYVBJOUXZ-.',
                          'ABCDEFGHIJKLMNOPQRSTUUUUUUVV')
 
-def generate_features_domain(file: str, device: torch.device):
+def generate_features_domain(file: str, device: torch.device, pdb_chain: str="A"):
     """Returns single, pair, rotation, translation and resi index features for a pdb.
 
     Args:
@@ -46,7 +46,7 @@ def generate_features_domain(file: str, device: torch.device):
         ]
     """
 
-    pdb, ca, backbone = pdb_to_features(file)
+    pdb, ca, backbone = pdb_to_features(file, pdb_chain)
 
     seq = torch.tensor(encode_seq(ca["resn"], three_letter=True)).long()
 
@@ -67,11 +67,10 @@ def generate_features_domain(file: str, device: torch.device):
 
     return {'s': s, 'z': z, 'r': r, 't': t, 'ri': ri, 'pdb': pdb, 'b': b, 'nres': s.shape[1]}
 
-def pdb_to_features(file, resi=None):
+def pdb_to_features(file, pdb_chain: str="A", resi=None):
 
     if os.path.exists(file):
-        pdb = open_pdb(file)
-        # print(pdb)
+        pdb = open_pdb(file, pdb_chain)
         pdb = check_bb(check_alt_res(pdb), missing=False)
         pdb = [np.sort(pdb[0], order='resi')]
 

@@ -143,7 +143,7 @@ def read_split_weight_files(directory: str) -> dict:
 
     return weights
 
-def segment(pdb_path: str, network: torch.nn.Module, device: str, length_conditional_iterate: bool, iterate: bool, max_iterations: int, shuffle_indices: bool) -> dict:
+def segment(pdb_path: str, network: torch.nn.Module, device: str, length_conditional_iterate: bool, iterate: bool, max_iterations: int, shuffle_indices: bool, pdb_chain: str="A") -> dict:
     """
     Segment domains in a protein structure.
 
@@ -159,7 +159,7 @@ def segment(pdb_path: str, network: torch.nn.Module, device: str, length_conditi
     Returns:
         dict: A dictionary containing segmented features.
     """
-    features = generate_features_domain(pdb_path, device)
+    features = generate_features_domain(pdb_path, device, pdb_chain)
     
     if length_conditional_iterate and features['nres'] > 512:
         iterate = True
@@ -252,7 +252,7 @@ def print_summary(features: Dict[str, any], name_dict: Dict[str, str], start_tim
 def run_merizo(input_paths: List[str], device: str = 'cpu', max_iterations: int = 3, return_indices: bool = False, 
     length_conditional_iterate: bool = False, iterate: bool = False, shuffle_indices: bool = False, 
     save_pdb: bool = False, save_domains: bool = False, save_fasta: bool = False, save_pdf: bool = False, 
-    conf_filter: Optional[any] = None, plddt_filter: Optional[any] = None, output_headers: bool=False
+    conf_filter: Optional[any] = None, plddt_filter: Optional[any] = None, output_headers: bool=False, pdb_chain: str="A"
 ) -> None:
     """
     Run the Merizo algorithm on input PDB paths.
@@ -272,6 +272,7 @@ def run_merizo(input_paths: List[str], device: str = 'cpu', max_iterations: int 
         conf_filter: The confidence filter.
         plddt_filter: The PLDDT filter.
         output_headers: controls if stdout prints the headers or not.
+        pdb_chain: select which pdb chain we're segmenting.   
     """
     device = get_device(device)
     network = Merizo().to(device)
@@ -290,13 +291,12 @@ def run_merizo(input_paths: List[str], device: str = 'cpu', max_iterations: int 
                 pdb_out = pdb_bn + "_merizo_v2"
                 
                 name_dict = {'pdb_name': pdb_name, 'pdb_path': pdb_path, 'pdb_bn': pdb_bn, 'pdb_out': pdb_out}
-
                 if not os.path.exists(name_dict['pdb_out']):
                     # try:
                     
                     features = segment(pdb_path=pdb_path, network=network, device=device, 
                         length_conditional_iterate=length_conditional_iterate, iterate=iterate, 
-                        max_iterations=max_iterations, shuffle_indices=shuffle_indices)
+                        max_iterations=max_iterations, shuffle_indices=shuffle_indices, pdb_chain=pdb_chain)
                     
                     generate_outputs(name_dict=name_dict, features=features, conf_filter=conf_filter, 
                         plddt_filter=plddt_filter, save_pdb=save_pdb, save_domains=save_domains,
@@ -342,6 +342,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_iterations", dest="max_iterations", type=int, default=3, help="(int [1, inf]) Specify the maximum number of re-segmentations that can occur.")
     parser.add_argument("--shuffle_indices", dest="shuffle_indices", action="store_true", help="Shuffle domain indices - increases contrast between domain colours in PyMOL.")
     parser.add_argument("--return_indices", dest="return_indices", action="store_true", help="Return the domain indices for all residues.")
+    parser.add_argument("--pdb_chain", type=str, dest="pdb_chain", default="A", help="Select which PDB Chain you are analysing. Defaut is chain A")
     args = parser.parse_args()
     
     run_merizo(
@@ -358,5 +359,6 @@ if __name__ == "__main__":
         save_pdf=args.save_pdf, 
         conf_filter=args.conf_filter, 
         plddt_filter=args.plddt_filter,
-        output_headers=args.output_headers
+        output_headers=args.output_headers,
+        pdb_chain=args.pdb_chain
     )
