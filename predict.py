@@ -220,7 +220,8 @@ def generate_outputs(name_dict: Dict[str, str], features: Dict[str, any], conf_f
     if save_pdf:
         write_pdf_predictions(features, name_dict)
 
-def print_summary(features: Dict[str, any], name_dict: Dict[str, str], start_time: float) -> None:
+def print_summary(features: Dict[str, any], name_dict: Dict[str, str], start_time: float,
+                  output_headers: bool) -> None:
     """
     Print a summary based on the provided features and timing information.
 
@@ -236,6 +237,8 @@ def print_summary(features: Dict[str, any], name_dict: Dict[str, str], start_tim
     
     end_time = time.time() - start_time
     
+    if output_headers:
+        print("input\tnres\tnres_dom\tnres_ndr\tndom\tpIoU\truntime\tresult")
     print("{}\t{}\t{}\t{}\t{}\t{:.5f}\t{:.5f}\t{}".format(
         name_dict['pdb_name'], features['nres'],
         nres_domain,
@@ -249,7 +252,7 @@ def print_summary(features: Dict[str, any], name_dict: Dict[str, str], start_tim
 def run_merizo(input_paths: List[str], device: str = 'cpu', max_iterations: int = 3, return_indices: bool = False, 
     length_conditional_iterate: bool = False, iterate: bool = False, shuffle_indices: bool = False, 
     save_pdb: bool = False, save_domains: bool = False, save_fasta: bool = False, save_pdf: bool = False, 
-    conf_filter: Optional[any] = None, plddt_filter: Optional[any] = None
+    conf_filter: Optional[any] = None, plddt_filter: Optional[any] = None, output_headers: bool=False
 ) -> None:
     """
     Run the Merizo algorithm on input PDB paths.
@@ -268,6 +271,7 @@ def run_merizo(input_paths: List[str], device: str = 'cpu', max_iterations: int 
         save_pdf (bool): Whether to save PDF files. Defaults to False.
         conf_filter: The confidence filter.
         plddt_filter: The PLDDT filter.
+        output_headers: controls if stdout prints the headers or not.
     """
     device = get_device(device)
     network = Merizo().to(device)
@@ -298,7 +302,8 @@ def run_merizo(input_paths: List[str], device: str = 'cpu', max_iterations: int 
                         plddt_filter=plddt_filter, save_pdb=save_pdb, save_domains=save_domains,
                         save_fasta=save_fasta, save_pdf=save_pdf, return_indices=return_indices)
                     
-                    print_summary(features=features, name_dict=name_dict, start_time=start_time)
+                    print_summary(features=features, name_dict=name_dict, start_time=start_time, 
+                                  output_headers=output_headers)
 
             #         except:
             #             print("{}\tSegmentation failed.".format(pdb_name))
@@ -329,6 +334,7 @@ if __name__ == "__main__":
     parser.add_argument("--save_pdb", dest="save_pdb", action="store_true", help="Include to save the result as a pdb file. All domains will be included unless --conf_filter or --plddt_filter is used.")
     parser.add_argument("--save_domains", dest="save_domains", action="store_true", help="Include to save parsed domains as separate pdb files. Also saves the full pdb.")
     parser.add_argument("--save_fasta", dest="save_fasta", action="store_true", help="Include to save a fasta file of the input pdb.")
+    parser.add_argument("--output_headers", action="store_true", default=False, help="Select whether output TSV files have headers or not")
     parser.add_argument("--conf_filter", dest="conf_filter", type=float, default=None, help="(float, [0-1]) If specified, only domains with a pIoU above this threshold will be saved. ")
     parser.add_argument("--plddt_filter", dest="plddt_filter", type=float, default=None, help="(float, [0-1]) If specified, only domain with a plDDT above this threshold will be saved. Note: if used on a non-AF structure, this will correspond to crystallographic b-factors.")
     parser.add_argument("--iterate", dest="iterate", action="store_true", help=f"If used, domains under a length threshold (default: {DOM_AVE} residues) will be re-segmented.")
@@ -352,4 +358,5 @@ if __name__ == "__main__":
         save_pdf=args.save_pdf, 
         conf_filter=args.conf_filter, 
         plddt_filter=args.plddt_filter,
+        output_headers=args.output_headers
     )

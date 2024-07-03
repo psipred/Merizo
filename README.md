@@ -68,6 +68,7 @@ By default if no device flag (`-d`) is specified, if a GPU is available, it will
   --save_pdb            Include to save the result as a pdb file. All domains will be included unless --conf_filter or --plddt_filter is used.
   --save_domains        Include to save parsed domains as separate pdb files. Also saves the full pdb.
   --save_fasta          Include to save a fasta file of the input pdb.
+  --output_headers      Control if the table returned to stdout has a header line
   --conf_filter CONF_FILTER
                         (float, [0-1]) If specified, only domains with a pIoU above this threshold will be saved.
   --plddt_filter PLDDT_FILTER
