@@ -15,13 +15,20 @@ pip install -r requirements.txt
 
 Individual dependencies:
 ```
-pip install torch torchvision torchaudio
+pip install torch==2.0.1
 pip install scipy
 pip install matplotlib
 pip install einops
 pip install networkx
 pip install rotary-embedding-torch
 pip install natsort
+pip install numpy<2
+```
+
+If your machine has low disk space consider starting by installing CPU-only torch with
+
+```
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
 
 ## Usage
