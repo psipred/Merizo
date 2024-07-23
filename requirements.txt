@@ -2,7 +2,7 @@ einops
 matplotlib
 natsort
 networkx
-numpy
+numpy<2
 rotary_embedding_torch
 scipy
 setuptools
