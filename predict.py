@@ -252,7 +252,8 @@ def print_summary(features: Dict[str, any], name_dict: Dict[str, str], start_tim
 def run_merizo(input_paths: List[str], device: str = 'cpu', max_iterations: int = 3, return_indices: bool = False, 
     length_conditional_iterate: bool = False, iterate: bool = False, shuffle_indices: bool = False, 
     save_pdb: bool = False, save_domains: bool = False, save_fasta: bool = False, save_pdf: bool = False, 
-    conf_filter: Optional[any] = None, plddt_filter: Optional[any] = None, output_headers: bool=False, pdb_chain: str="A"
+    conf_filter: Optional[any] = None, plddt_filter: Optional[any] = None, output_headers: bool=False, pdb_chain: str="A",
+    threads: int = 0
 ) -> None:
     """
     Run the Merizo algorithm on input PDB paths.
@@ -274,7 +275,12 @@ def run_merizo(input_paths: List[str], device: str = 'cpu', max_iterations: int 
         output_headers: controls if stdout prints the headers or not.
         pdb_chain: select which pdb chain we're segmenting.   
     """
+
+    if threads > 0:
+        torch.set_num_threads(threads)
+
     device = get_device(device)
+
     network = Merizo().to(device)
 
     weights_dir = os.path.join(os.path.dirname(__file__), 'weights')
@@ -343,6 +349,8 @@ if __name__ == "__main__":
     parser.add_argument("--shuffle_indices", dest="shuffle_indices", action="store_true", help="Shuffle domain indices - increases contrast between domain colours in PyMOL.")
     parser.add_argument("--return_indices", dest="return_indices", action="store_true", help="Return the domain indices for all residues.")
     parser.add_argument("--pdb_chain", type=str, dest="pdb_chain", default="A", help="Select which PDB Chain you are analysing. Defaut is chain A")
+    parser.add_argument('-t', '--threads', type=int, default=-1, required=False, help="Number of CPU threads to use.")
+    
     args = parser.parse_args()
     
     run_merizo(
@@ -360,5 +368,6 @@ if __name__ == "__main__":
         conf_filter=args.conf_filter, 
         plddt_filter=args.plddt_filter,
         output_headers=args.output_headers,
-        pdb_chain=args.pdb_chain
+        pdb_chain=args.pdb_chain,
+        threads=args.threads,
     )
