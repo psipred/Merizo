@@ -1,0 +1,6 @@
+- name: Install merizo
+  hosts: all
+  roles:
+    - merizo
+  vars_files:
+   - ./config_vars.yml

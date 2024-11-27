@@ -6,6 +6,33 @@ If you use Merizo, please cite the paper:
 
    **Lau et al., 2023. Merizo: a rapid and accurate protein domain segmentation method using invariant point attention. Nature Communications.** ([link](https://www.nature.com/articles/s41467-023-43934-4))  
 
+## Ansible installation
+
+First ensure that ansible is installed on your system, then clone the github repo. 
+
+``` bash
+pip install ansible
+git clone https://github.com/psipred/merizo.git
+cd merizo/ansible_installer
+```
+
+Next edit the the config_vars.yml to reflect where you would like Merizo and 
+its underlying data to be installed.
+
+You can now run ansible as per
+
+``` bash
+ansible-playbook -i hosts install.yml
+```
+
+You can edit the hosts file to install Merizo on one or more machines. This ansible installation creates a python virtualenv called merizo_env which the installation needs. You can activate this with
+
+``` bash 
+source [app path]/merizo_env/bin/activate
+```
+
+If you're using a virtualenv to install Torch you may find you need to add the paths to virtualenv versions of cudnn/lib/ and nccl/lib/ to your LD_LIBRARY_PATH 
+
 ## Installation
 
 Packages needed to run Merizo can be installed either individually or concurrently using the `requirements.txt` file:

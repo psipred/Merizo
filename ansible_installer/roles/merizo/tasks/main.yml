@@ -1,0 +1,27 @@
+- name: Check merizo is present
+  stat: path=/opt/merizo
+  register: merizo_exist
+
+- name: Check out merizo from GIT
+  when: merizo_exist.stat.exists == False
+  git:
+    repo: https://github.com/psipred/merizo.git
+    dest: "{{ app_location }}/merizo"
+    clone: yes
+    force: yes
+
+- name: Initiate virtualenv
+  when: merizo_exist.stat.exists == False
+  pip: 
+    virtualenv: "{{ app_location }}/merizo_env" 
+    virtualenv_python: python{{ python_version }}
+    requirements: ""
+
+- name: Install requirements
+  when: merizo_exist.stat.exists == False
+  pip:
+    state: latest
+    virtualenv: "{{ app_location }}/merizo_env"
+    virtualenv_command: /bin/virtualenv
+    virtualenv_python: "{{ app_location }}/merizo_env/bin/python"
+    requirements: "{{ app_location }}/merizo/requirements.txt"
