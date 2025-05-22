@@ -20,6 +20,11 @@ RES_BUILD_INFO = {
         'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'OD1', 'OD2'],
         'single-letter': 'D'
     },
+    'ASH': {
+        'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-OD1'],
+        'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'OD1', 'OD2'],
+        'single-letter': 'D'
+    },
     'CYS': {
         'torsion-names': ['N-CA-CB-SG'],
         'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'SG'],
@@ -35,12 +40,42 @@ RES_BUILD_INFO = {
         'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'OE2'],
         'single-letter': 'E'
     },
+    'GLH': {
+        'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-CD', 'CB-CG-CD-OE1'],
+        'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'OE2'],
+        'single-letter': 'E'
+    },
     'GLY': {
         'torsion-names': [],
         'atom-names': ['N', 'CA', 'C', 'O', 'CB'],
         'single-letter': 'G'
     },
     'HIS': {
+        'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-ND1'],
+        'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'ND1', 'CD2', 'CE1', 'NE2'],
+        'single-letter': 'H'
+    },
+    'HID': {
+        'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-ND1'],
+        'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'ND1', 'CD2', 'CE1', 'NE2'],
+        'single-letter': 'H'
+    },
+    'HIE': {
+        'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-ND1'],
+        'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'ND1', 'CD2', 'CE1', 'NE2'],
+        'single-letter': 'H'
+    },
+    'HIP': {
+        'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-ND1'],
+        'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'ND1', 'CD2', 'CE1', 'NE2'],
+        'single-letter': 'H'
+    },
+    'HSD': {
+        'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-ND1'],
+        'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'ND1', 'CD2', 'CE1', 'NE2'],
+        'single-letter': 'H'
+    },
+    'HSE': {
         'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-ND1'],
         'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'ND1', 'CD2', 'CE1', 'NE2'],
         'single-letter': 'H'
@@ -56,6 +91,11 @@ RES_BUILD_INFO = {
         'single-letter': 'L'
     },
     'LYS': {
+        'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-CD', 'CB-CG-CD-CE', 'CG-CD-CE-NZ'],
+        'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'CE', 'NZ'],
+        'single-letter': 'K'
+    },
+    'LYN': {
         'torsion-names': ['N-CA-CB-CG', 'CA-CB-CG-CD', 'CB-CG-CD-CE', 'CG-CD-CE-NZ'],
         'atom-names': ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'CE', 'NZ'],
         'single-letter': 'K'
